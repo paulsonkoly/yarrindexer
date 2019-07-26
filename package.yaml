@@ -24,6 +24,11 @@ dependencies:
 
 library:
   source-dirs: src
+  ghc-options:
+  - -Wall
+  dependencies:
+  - tagsoup
+  - text
 
 executables:
   yarrindexer-exe:
@@ -35,6 +40,7 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - yarrindexer
+    - text
 
 tests:
   yarrindexer-test:
@@ -46,3 +52,5 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - yarrindexer
+    - hspec
+    - QuickCheck
