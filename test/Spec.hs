@@ -3,11 +3,12 @@ module Main
   )
 where
 
+import           Data.List
 import           Test.Hspec
 import           Test.QuickCheck
-import           Lib
 import           Control.Monad
 
+import           Lib
 
 -- correctly parenthesized digits with maximum embeding depth allowed
 tags :: Int -> Gen [Char]
@@ -50,5 +51,5 @@ main = hspec $ do
       let count f = length . (filter f)
           result = extractParens t
       in  count isOpen result == count isClose result
-
-
+    it "is a sublist of the original" $ forAll (tags 3) $ \t ->
+      extractParens t `isInfixOf` t
