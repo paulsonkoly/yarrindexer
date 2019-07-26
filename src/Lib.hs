@@ -42,13 +42,13 @@ convert = TagSoup.parseTags
 classNames :: Doc -> [Text]
 classNames doc =
   let classIndex = dropWhile notClassIndex doc
-  in  [TagSoup.innerText $ extractSection isDivOpen isDivClose classIndex]
+      entries    = dropWhile notEntries classIndex
+  in  [TagSoup.innerText $ extractDiv entries]
  where
+  extractDiv = extractSection isDivOpen isDivClose
   notClassIndex =
-    ( not
-    . (Match.tagOpen (== "div") (Match.anyAttr (== ("id", "class-index"))))
-    )
-  isDivOpen  = (Match.tagOpen (== "div") (const True))
-  isDivClose = (Match.tagOpen (== "div") (const True))
-
-
+    not . Match.tagOpen (== "div") (Match.anyAttr (== ("id", "class-index")))
+  notEntries =
+    not . Match.tagOpen (== "div") (Match.anyAttr (== ("class", "entries")))
+  isDivOpen  = Match.tagOpen (== "div") (const True)
+  isDivClose = Match.tagClose (== "div")
