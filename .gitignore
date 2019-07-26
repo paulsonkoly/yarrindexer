@@ -1,3 +1,5 @@
 .stack-work/
 yarrindexer.cabal
 *~
+.hspec-failures
+stack.yaml.lock
