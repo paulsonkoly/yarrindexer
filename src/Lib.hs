@@ -2,7 +2,7 @@ module Lib
   ( Doc
   , extractSection
   , convert
-  , classNames
+  , classes
   )
 where
 
@@ -49,8 +49,8 @@ convert :: Text -> Doc
 convert = TagSoup.parseTags
 
 
-classNames :: Doc -> [Class]
-classNames doc =
+classes :: Doc -> [Class]
+classes doc =
   let
     classIndex = dropWhile (~/= "<div id=class-index>") doc
     entries    = extractDiv $ dropWhile (~/= "<div class=entries>") classIndex
