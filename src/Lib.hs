@@ -11,6 +11,7 @@ import           Data.Text                      ( Text )
 import           Text.HTML.TagSoup              ( Tag(..), (~==) , (~/=))
 import qualified Text.HTML.TagSoup             as TagSoup
 
+import Class
 
 type Doc = [Tag Text]
 
@@ -48,7 +49,7 @@ convert :: Text -> Doc
 convert = TagSoup.parseTags
 
 
-classNames :: Doc -> [Text]
+classNames :: Doc -> [Class]
 classNames doc =
   let
     classIndex = dropWhile (~/= "<div id=class-index>") doc
@@ -58,16 +59,14 @@ classNames doc =
   in
     map processParagraph paragraphs
  where
-  extractDiv = extractSection (~== "<div>") (~== ("</div>"))
+  extractDiv = extractSection (~== "<div>") (~== "</div>")
   processParagraph p =
     let spn       = extractSection (~== "<span>") (~== "</span>") p
         anchor    = extractSection (~== "<a>") (~== "</a>") p
-        classType = TagSoup.innerText spn
-        link      = TagSoup.fromAttrib (Text.pack "href") $ head anchor
-        linkText  = TagSoup.innerText anchor
-    in  Text.pack "type : "
-          <> classType
-          <> Text.pack " link : "
-          <> link
-          <> Text.pack " linkText : "
-          <> linkText
+        classType = case Text.unpack $ TagSoup.innerText spn of
+          "C"  -> C
+          "M"  -> M
+          oops -> error $ "Couldn't parse class type : " ++ oops
+        lnk      = TagSoup.fromAttrib (Text.pack "href") $ head anchor
+        linkText = TagSoup.innerText anchor
+    in  Class classType lnk linkText
