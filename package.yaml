@@ -41,6 +41,7 @@ executables:
     dependencies:
     - yarrindexer
     - text
+    - optparse-applicative
 
 tests:
   yarrindexer-test:

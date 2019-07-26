@@ -3,15 +3,20 @@ module Lib
   , extractSection
   , convert
   , classes
+  , methods
   )
 where
 
-import qualified Data.Text as Text
+import Prelude hiding (div, span)
+import qualified Data.Text                     as Text
 import           Data.Text                      ( Text )
-import           Text.HTML.TagSoup              ( Tag(..), (~==) , (~/=))
+import           Text.HTML.TagSoup              ( Tag(..)
+                                                , (~==)
+                                                , (~/=)
+                                                )
 import qualified Text.HTML.TagSoup             as TagSoup
 
-import Class
+import           YarrIndexer.Types
 
 type Doc = [Tag Text]
 
@@ -45,6 +50,15 @@ extract start end list =
         first' -> first' : extract start end (drop (length first) list')
 
 
+div :: [Tag Text] -> [Tag Text]
+div = extractSection (~== "<div>") (~== "</div>")
+
+span :: [Tag Text] -> [Tag Text]
+span = extractSection (~== "<span>") (~== "</span>")
+
+a :: [Tag Text] -> [Tag Text]
+a = extractSection (~== "<a>") (~== "</a>")
+
 convert :: Text -> Doc
 convert = TagSoup.parseTags
 
@@ -53,16 +67,15 @@ classes :: Doc -> [Class]
 classes doc =
   let
     classIndex = dropWhile (~/= "<div id=class-index>") doc
-    entries    = extractDiv $ dropWhile (~/= "<div class=entries>") classIndex
+    entries    = div $ dropWhile (~/= "<div class=entries>") classIndex
     paragraphs =
       extract (~== ("<p>" :: String)) (~== ("</p>" :: String)) entries
   in
     map processParagraph paragraphs
  where
-  extractDiv = extractSection (~== "<div>") (~== "</div>")
   processParagraph p =
-    let spn       = extractSection (~== "<span>") (~== "</span>") p
-        anchor    = extractSection (~== "<a>") (~== "</a>") p
+    let spn       = span p
+        anchor    = a p
         classType = case Text.unpack $ TagSoup.innerText spn of
           "C"  -> C
           "M"  -> M
@@ -70,3 +83,20 @@ classes doc =
         lnk      = TagSoup.fromAttrib (Text.pack "href") $ head anchor
         linkText = TagSoup.innerText anchor
     in  Class classType lnk linkText
+
+
+methods :: Doc -> [Method]
+methods doc =
+  let
+    methodIndex = dropWhile (~/= "<div id=method-index>") doc
+    entries    = div $ dropWhile (~/= "<div class=entries>") methodIndex
+    paragraphs =
+      extract (~== ("<p>" :: String)) (~== ("</p>" :: String)) entries
+  in
+    map processParagraph paragraphs
+ where
+  processParagraph p =
+    let anchor    = a p
+        lnk      = TagSoup.fromAttrib (Text.pack "href") $ head anchor
+        linkText = TagSoup.innerText anchor
+    in  Method lnk linkText
