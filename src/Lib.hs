@@ -7,7 +7,9 @@ module Lib
   )
 where
 
-import Prelude hiding (div, span)
+import           Prelude                 hiding ( div
+                                                , span
+                                                )
 import qualified Data.Text                     as Text
 import           Data.Text                      ( Text )
 import           Text.HTML.TagSoup              ( Tag(..)
@@ -65,13 +67,10 @@ convert = TagSoup.parseTags
 
 classes :: Doc -> [Class]
 classes doc =
-  let
-    classIndex = dropWhile (~/= "<div id=class-index>") doc
-    entries    = div $ dropWhile (~/= "<div class=entries>") classIndex
-    paragraphs =
-      extract (~== ("<p>" :: String)) (~== ("</p>" :: String)) entries
-  in
-    map processParagraph paragraphs
+  let classIndex = dropWhile (~/= "<div id=class-index>") doc
+      entries    = div $ dropWhile (~/= "<div class=entries>") classIndex
+      paragraphs = extract (~== "<p>") (~== "</p>") entries
+  in  map processParagraph paragraphs
  where
   processParagraph p =
     let spn       = span p
@@ -87,16 +86,13 @@ classes doc =
 
 methods :: Doc -> [Method]
 methods doc =
-  let
-    methodIndex = dropWhile (~/= "<div id=method-index>") doc
-    entries    = div $ dropWhile (~/= "<div class=entries>") methodIndex
-    paragraphs =
-      extract (~== ("<p>" :: String)) (~== ("</p>" :: String)) entries
-  in
-    map processParagraph paragraphs
+  let methodIndex = dropWhile (~/= "<div id=method-index>") doc
+      entries     = div $ dropWhile (~/= "<div class=entries>") methodIndex
+      paragraphs  = extract (~== "<p>") (~== "</p>") entries
+  in  map processParagraph paragraphs
  where
   processParagraph p =
-    let anchor    = a p
+    let anchor   = a p
         lnk      = TagSoup.fromAttrib (Text.pack "href") $ head anchor
         linkText = TagSoup.innerText anchor
     in  Method lnk linkText
